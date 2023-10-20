@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sheets</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="chart-container">
+        <canvas id="myChart" width="1590" height="450" style="display: block; box-sizing: border-box; height: 450px; width: 1590px;"></canvas>
+    </div>
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [], 
+                datasets: [{
+                    label: 'Volts',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Fecha'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Volts'
+                        }
+                    }
+                }
+            }
+        });
+
+        function fetchSheetData() {
+            
+            var apiKey = 'AIzaSyAECSknrASo1T5-1bTCD8654fj5r05YGeE';
+            var spreadsheetId = '1Ibabq9PW2xfKI1TlbH1knx8GjHm-ZZlv7L_0Av07jdc';
+            var range = 'A:B';
+            var sheetURL = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
+
+            fetch(sheetURL)
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    var values = data.values || [];
+                    var labels = [];
+                    var voltages = [];
+
+                    for (var i = 1; i < values.length; i++) {
+                        labels.push(values[i][0]); // Fecha
+                        voltages.push(parseFloat(values[i][1])); // Voltaje
+                    }
+
+                    console.log(voltages);
+                    console.log(labels);
+                    myChart.data.labels = labels;
+                    myChart.data.datasets[0].data = voltages;
+                    myChart.update();
+                })
+                .catch(function(error) {
+                    console.error('Error al obtener los datos de Google Sheets:', error);
+                });
+        }
+
+        fetchSheetData(); 
+        setInterval(fetchSheetData, 60000); // Actualizar cada 1 minuto
+    </script>
+</body>
+</html>

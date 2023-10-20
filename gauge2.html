@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prueba de Lector de Voltaje - ID</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+</head>
+<body>
+    <div id="chart_container_new1" style="width: 260px; height: 300px;"></div>
+    <script type="text/javascript">
+        var chartNew1;
+        var chartOptionsNew1 = {
+            chart: {
+                type: 'gauge',
+                plotBackgroundColor: null,
+                plotBackgroundImage: null,
+                plotBorderWidth: 0,
+                plotShadow: false
+            },
+            title: {
+                text: 'Pozo 2'
+            },
+            // Configura la accesibilidad en true
+            accessibility: {
+                enabled: true
+            },
+            pane: {
+                startAngle: -150,
+                endAngle: 150,
+                background: [{
+                    backgroundColor: {
+                        linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                        stops: [
+                            [0, '#FFF'],
+                            [1, '#FFF']
+                        ]
+                    },
+                    borderWidth: 0,
+                    outerRadius: '109%'
+                }, {
+                    backgroundColor: {
+                        linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                        stops: [
+                            [0, '#FFF'],
+                            [1, '#FFF']
+                        ]
+                    },
+                    borderWidth: 1,
+                    outerRadius: '107%'
+                }, {
+                    background: '#DDD',
+                    borderWidth: 0,
+                    outerRadius: '105%',
+                    innerRadius: '103%'
+                }]
+            },
+            yAxis: {
+                min: 0,
+                max: 5,
+                minorTickInterval: 'auto',
+                minorTickWidth: 1,
+                minorTickLength: 10,
+                minorTickPosition: 'inside',
+                minorTickColor: '#666',
+                tickPixelInterval: 30,
+                tickWidth: 2,
+                tickPosition: 'inside',
+                tickLength: 10,
+                tickColor: '#666',
+                labels: {
+                    step: 1,
+                    rotation: 'auto'
+                },
+                title: {
+                    text: 'Voltaje (V)'
+                },
+            
+                plotBands: [{
+                    from: 0,
+                    to: 1.5,
+                    color: '#DF5353' // Rojo
+                }, {
+                    from: 1.5,
+                    to: 3.5,
+                    color: '#DDDF0D' // Amarillo
+                }, {
+                    from: 3.5,
+                    to: 5,
+                    color: '#55BF3B' // Verde
+                }]
+            },
+            series: [{
+                name: 'Voltaje',
+                data: [3.5],
+                tooltip: {
+                    valueSuffix: ' V'
+                }
+            }]
+        };
+
+        chartNew1 = Highcharts.chart('chart_container_new1', chartOptionsNew1);
+
+        function fetchSheetData() {
+            var apiKey = 'AIzaSyAECSknrASo1T5-1bTCD8654fj5r05YGeE';
+            var spreadsheetId = '1qfx_ewckTAyeWS-MRfrNYn53IHG0LsIQq4FUSGqRh0E';
+            var range = 'B:B'; // Cambia a la columna B
+            var sheetURL = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
+
+            fetch(sheetURL)
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    var values = data.values || [];
+                    var voltages = [];
+
+                    for (var i = 1; i < values.length; i++) {
+                        var voltage = parseFloat(values[i][0]); // Obtener el valor de la columna B
+                        if (!isNaN(voltage)) {
+                            voltages.push(voltage);
+                        }
+                    }
+
+                    console.log(voltages);
+                    if (voltages.length > 0) {
+                        // Actualizar el valor del voltaje en el gráfico
+                        chartNew1.series[0].points[0].update(voltages[voltages.length - 1]);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error al obtener los datos de Google Sheets:', error);
+                });
+        }
+
+        // Llama a fetchSheetData al cargar la página y cada 1 minuto
+        fetchSheetData();
+        setInterval(fetchSheetData, 60000);
+    </script>
+</body>
+</html>
